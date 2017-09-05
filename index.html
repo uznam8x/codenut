@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Document</title>
+</head>
+<body>
+<ul data-node="nav">
+    <li>
+        <button>root</button>
+        <ul>
+            <li>
+                <button>Application</button>
+            </li>
+        </ul>
+    </li>
+</ul>
+<script src="http://code.jquery.com/jquery.min.js"></script>
+<script>
+    var $dom = $(document);
+    var $nav = $('[data-node="nav"]');
+
+    var build = {
+        json:function( $item ){
+            var obj = { "text": $item.children('button').text() };
+            if( $item.children('ul') ){
+                $item.children('ul').children().each(function() {
+                    if (!obj.children) {
+                        obj.children = [];
+                        obj.children.push( build.json( $(this) ) );
+                    }
+                });
+            }
+            return obj;
+        },
+        html:function(){
+
+        }
+    };
+
+    var menu = build.json( $nav.children() );
+    console.log(menu) ;
+</script>
+</body>
+</html>
