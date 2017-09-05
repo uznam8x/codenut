@@ -1,0 +1,24 @@
+{
+  "name": "codenut",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "uznam8x"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/uznam8x/codenut",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "./public/javascripts/libs",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.2.1",
+    "gsap": "^1.20.2",
+    "moment": "^2.18.1",
+    "Split.js": "^1.3.5"
+  }
+}
