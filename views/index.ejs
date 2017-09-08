@@ -1,11 +1,327 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <style>
+        <%- include ../public/stylesheet/style.css %>
+    </style>
+    <link rel="stylesheet" href="//fonts.googleapis.com/earlyaccess/notosanskr.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <title><%=title%></title>
+</head>
+<body>
+<header>
+</header>
+<main class="row">
+    <div class="frame" id="Controller">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="navigator-tab" data-toggle="tab" href="#navigator" role="tab" aria-controls="home" aria-expanded="true">Navigator</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="structure-tab" data-toggle="tab" href="#structure" role="tab" aria-controls="structure">Strucher</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="navigator" role="tabpanel" aria-labelledby="navigator-tab">
+                <div class="sortable">
+                    <button type="button" class="sortable--selected">&#47;</button>
+                    <ul class="treemenu" data-tree-controller="navigator"></ul>
+                </div>
+
+                <div class="toolbar">
+                    <button type="button" data-action="add-nav">더하기</button>
+                    <button type="button" data-action="remove-nav">빼기</button>
+                    <button type="button" data-action="save-nav">저장</button>
+                </div>
+            </div>
+            <div class="tab-pane" id="structure" role="tabpanel" aria-labelledby="structure-tab">
+                <div class="sortable">
+                    <button type="button" class="sortable--selected">&#47;</button>
+                    <ul class="treemenu" data-tree-controller="structure"></ul>
+                </div>
+
+                <div class="toolbar">
+                    <button type="button" data-action="add-structure">더하기</button>
+                    <button type="button" data-action="remove-structure">빼기</button>
+                    <button type="button" data-action="save-structure">저장</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="frame embed" id="PC">
+        <iframe src="/page/welcome.html"></iframe>
+    </div>
+    <div class="frame embed" id="Mobile">
+        <iframe src="/page/welcome.html"></iframe>
+    </div>
+</main>
+
+<script>
+    <%- include ../public/javascript/libs/jquery/dist/jquery.min.js %>
+    <%- include ../public/javascript/libs/gsap/src/minified/TweenMax.min.js %>
+    <%- include ../public/javascript/libs/Split.js/split.min.js %>
+    <%- include ../public/javascript/libs/popper.js/dist/umd/popper.min.js %>
+    <%- include ../public/javascript/libs/popper.js/dist/umd/popper-utils.min.js %>
+    <%- include ../public/javascript/libs/bootstrap/dist/js/bootstrap.min.js %>
+    <%- include ../public/javascript/libs/jquery-sortable/source/js/jquery-sortable-min.js %>
+</script>
+
+<script>
+    (function($){
+        'use strict';
+        window.Codenut = {
+            j2h:{
+                json:function( $item){
+                    var obj = [];
+                    $item.each( function(i, node){
+                        var $node = $(node);
+                        var key = $node.children('button').text();
+                        var data = {};
+                        data[ key ] = {};
+                        var $ul = $node.children('ul');
+                        if( $ul && $ul.children().length ){
+                            data[ key ].children = Codenut.j2h.json( $ul.children() );
+                        }
+                        obj.push(data);
+                    } )
+                    return obj;
+                },
+                html:function( $item, $path ){
+                    var el = '', block = '';
+                    if( !$path ) $path = '';
+                    $path += '/';
+                    $.each( $item, function(i, node){
+                        for(var key in node){
+                            block = '<li><button type="button" data-tree-path="'+$path+key+'">{{name}}</button><ul>{{children}}</ul></li>'.replace(/{{name}}/g, key);
+                            if( node[key].children && node[key].children.length ){
+                                block = block.replace(/{{children}}/g, Codenut.j2h.html( node[key].children, $path+key ));
+                            }
+                        }
+                        el += block;
+                    } );
+                    return el.replace(/{{children}}/g, '');
+                }
+            },
+            page:""
+        }
+    })(jQuery);
+    (function($){
+        'use strict';
+        var instance = Split(['#Controller', '#PC','#Mobile'], {
+            sizes: [20, 50, 30],
+            minSize: 200,
+            gutterSize: 6
+        });
+        //instance.collapse(2);
+        //instance.setSize([20, 50, 30]);
+
+        // sortable
+        var oldContainer;
+        var $dom = $(document);
+        $('.treemenu').sortable({
+            group: 'nested',
+            afterMove: function (placeholder, container) {
+                if(oldContainer !== container){
+                    if(oldContainer)
+                        oldContainer.el.removeClass("sortable__group");
+                    container.el.addClass("sortable__group");
+                    oldContainer = container;
+
+                }
+            },
+            onDrag:function($item, position, _super, event){
+
+            },
+            onDrop: function ($item, container, _super) {
+                container.el.removeClass("sortable__group");
+                _super($item, container);
+
+                /*
+                var controller = $(container.el).closest('.treemenu').attr('data-tree-controller');
+                if( controller === 'navigator' ){
+                    $dom.trigger({type:'nav.update'});
+                }
+                if( controller === 'structure' ){
+                    $dom.trigger({type:'page.update'});
+                }*/
+            }
+        });
+    })(jQuery);
+
+    (function($){
+        'use strict';
+        var $dom = $(document);
+
+        // add page
+        $dom.on('click', '[data-action="add-nav"]', function(){
+            var page = prompt("Page name", "");
+            if (page) {
+                var $selected = $('#navigator .sortable--selected');
+                var $next = $selected.next();
+                if( !$next.prop('nodeName') ){
+                    $next = $('<ul />');
+                    $selected.parent().append($next)
+                }
+                var base = $selected.closest('[data-tree-path]').attr('data-tree-path') || '';
+
+                $next.append( '<li><button type="button" data-tree-path="'+(base+'/'+page)+'">'+page+'</button></li>' );
+
+
+                setTimeout(function(){
+                    $dom.trigger({type:'page.create', param:base+'/'+page});
+                },1);
+            }
+        })
+
+        $dom.on('click', '.sortable button', function(e){
+            //$('.sortable .sortable--selected').removeClass('sortable--selected');
+
+            var $self = $(e.currentTarget);
+            $self.closest('.sortable').find('.sortable--selected').removeClass('sortable--selected');
+            $self.addClass('sortable--selected');
+        })
+        $dom.on('click', '#navigator .sortable button', function(e){
+            var $self = $(e.currentTarget);
+            $dom.trigger({type:"page.show", param:$self.attr('data-tree-path')});
+        })
+
+        $dom.on('click', '[data-action="add-structure"]', function(){
+            var comp = prompt("Structure name", "");
+            if (comp) {
+                var $selected = $('#structure .sortable--selected');
+                var $next = $selected.next();
+                if( !$next.prop('nodeName') ){
+                    $next = $('<ul />');
+                    $selected.parent().append($next)
+                }
+                var base = $selected.closest('[data-tree-path]').attr('data-tree-path') || '';
+                $next.append( '<li><button type="button" data-tree-path="'+(base+'/'+comp)+'">'+comp+'</button></li>' );
+
+                $dom.trigger({type:'page.update'});
+            }
+        })
+
+        $dom.on('click', '[data-action="save-nav"]', function(){
+            $dom.trigger({type:'nav.update'})
+        })
+        $dom.on('click', '[data-action="save-structure"]', function(){
+            $dom.trigger({type:'page.update'})
+        })
+    })(jQuery);
+
+
+
+    // create page
+    (function($){
+        'use strict';
+        var $dom = $(document);
+        function create(e){
+            var param = {
+                url:'/api/page/create',
+                data:{
+                    path:e.param
+                },
+                type:'post',
+                success:function(response){
+                    $dom.trigger({type:'nav.update'});
+                }
+            }
+            $.ajax( param );
+        }
+        $dom.on('page.create', create);
+    })(jQuery);
+
+    // page show
+    (function(){
+        'use strict';
+        var $dom = $(document);
+        var $structure = $('#structure .treemenu');
+
+        $dom.on('page.show', function(e){
+            var src = Codenut.page = '/page'+(e.param||'');
+            if( e.param ){
+                var param = {
+                    url:'/api/page/show',
+                    data:{
+                        src : Codenut.page
+                    },
+                    type:"get",
+                    success:function( response ){
+                        $structure.html( Codenut.j2h.html( response.data ) );
+                    }
+                }
+                $.ajax(param);
+            } else {
+                src = '/page/welcome.html';
+                $structure.html('');
+            }
+            setTimeout( function(){
+                $('iframe').attr('src', src);
+            },1 );
+
+        })
+    })();
+
+    // page update
+    (function($){
+        'use strict';
+        var $dom = $(document);
+        var $structure = $('#structure .treemenu');
+
+        $dom.on('page.update', function(){
+
+            var param = {
+                url:'/api/page/update',
+                data:{
+                    src:Codenut.page,
+                    structure:JSON.stringify( Codenut.j2h.json( $structure.children() ) )
+                },
+                type:"post",
+                success:function( response ){
+                    setTimeout( function(){
+                        $('iframe').attr('src', Codenut.page);
+                    },1 );
+                },
+                error:function(err){
+                    alert('페이지 저장을 하지 못했습니다. 5초후 다시 시도 합니다.');
+                    setTimeout( function(){
+                        $dom.trigger({type:'page.update'});
+                    },5000 );
+
+                }
+            }
+            $.ajax(param);
+        })
+    })(jQuery);
+
+    (function($){
+        'use strict';
+
+        var $dom = $(document);
+        var $page = $('#navigator .treemenu');
+        $page.html( Codenut.j2h.html( JSON.parse('<%-nav%>') ) );
+        $dom.on('nav.update', function(){
+            var menu = Codenut.j2h.json( $('#navigator .treemenu').children() );
+
+            var param = {
+                url:'/api/nav/update',
+                data:{
+                    nav:JSON.stringify(menu)
+                },
+                type:'post',
+                success:function(response){
+                    console.log( response );
+                }
+            }
+            $.ajax(param);
+        })
+    })(jQuery);
+</script>
+</body>
 </html>

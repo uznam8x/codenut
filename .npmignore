@@ -12,6 +12,7 @@ CVS
 npm-debug.log
 app
 .idea
+bower.json
+.bowerrc
+gulpfile.js
 develop
-node_modules
-public/javascript
