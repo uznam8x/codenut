@@ -14,4 +14,4 @@ app
 .idea
 develop
 node_modules
-public/javascript
+public/javascript/libs

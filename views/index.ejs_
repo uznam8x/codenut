@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <link rel="stylesheet" href="/stylesheet/style.css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/earlyaccess/notosanskr.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <title><%=title%></title>
+</head>
+<body>
+<header>
+    <h1>Codenut</h1>
+    <nav class="gnb">
+        <ul>
+            <li><button type="button" class="gnb__button" data-modal-action="setting">Setting</button></li>
+            <li><button type="button" class="gnb__button" data-modal-action="">Help</button></li>
+        </ul>
+    </nav>
+</header>
+<main class="row">
+    <div class="frame" id="Controller">
+        <ul class="story">
+            <li class="story__board">
+                <h3 class="story__header">Navigator<span class="suffix"><button type="button" class="story__button story__next"><i class="fa fa-chevron-right" aria-hidden="true"></i></button></span></h3>
+                <div id="navigator" class="scroll">
+                    <div class="scroll--xy">
+                        <ul class="treemenu">
+                            <li>
+                                <div class="treemenu__action" data-codenut-path="/">
+                                    <button type="button" class="treemenu__action__button treemenu__action__switch"><i class="fa fa-caret-right" aria-hidden="true"></i></button>
+                                    <button type="button" class="treemenu__action__button treemenu__action__label">index</button>
+                                    <button type="button" class="treemenu__action__button treemenu__action__add"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                                </div>
+                                <ul class="sortable"></ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="toolbar">
+                        <button type="button" class="toolbar__button toolbar__save">Save</button>
+                        <button type="button" class="toolbar__button">All Compile</button>
+                    </div>
+                </div>
+            </li>
+            <li class="story__board">
+                <h3 class="story__header"><span class="prefix"><button type="button" class="story__button story__prev"><i class="fa fa-chevron-left" aria-hidden="true"></i></button></span>Structure</h3>
+                <div id="structure" class="scroll">
+                    <div class="scroll--xy">
+                        <ul class="treemenu">
+                            <li>
+                                <div class="treemenu__action" data-codenut-path="/">
+                                    <button type="button" class="treemenu__action__button treemenu__action__switch"><i class="fa fa-caret-right" aria-hidden="true"></i></button>
+                                    <button type="button" class="treemenu__action__button treemenu__action__label">body</button>
+                                    <button type="button" class="treemenu__action__button treemenu__action__add"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                                </div>
+                                <ul class="sortable"></ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="toolbar">
+                        <button type="button" class="toolbar__button toolbar__save">Save</button>
+                        <button type="button" class="toolbar__button">All Compile</button>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="frame embed embed--loading" id="PC">
+        <iframe src=""></iframe>
+    </div>
+    <div class="frame embed embed--loading" id="Mobile">
+        <iframe src=""></iframe>
+    </div>
+</main>
+
+<div class="modal">
+    <div class="modal__wrap">
+        <h5 class="modal__header"></h5>
+        <div class="modal__content"></div>
+        <div class="modal__footer">
+            <button type="button" class="btn btn-secondary">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    <%- include ../public/javascript/libs/jquery/dist/jquery.min.js %>
+    <%- include ../public/javascript/libs/gsap/src/minified/TweenMax.min.js %>
+    <%- include ../public/javascript/libs/Split.js/split.min.js %>
+    <%- include ../public/javascript/libs/jquery-sortable/source/js/jquery-sortable-min.js %>
+    <%- include ../public/javascript/libs/alasql/dist/alasql.min.js %>
+</script>
+
+<script>
+    <%- include ../public/javascript/codenut.js %>
+    <%- include ../public/javascript/story.js %>
+</script>
+<script>
+    (function(){
+        'use strict';
+        Codenut.nav = JSON.parse('<%-nav%>');
+    })();
+</script>
+<script>
+    <%- include ../public/javascript/sortable.ctrl.js %>
+    <%- include ../public/javascript/splitjs.ctrl.js %>
+    <%- include ../public/javascript/page.ctrl.js %>
+    <%- include ../public/javascript/modal.js %>
+</script>
+</body>
+</html>

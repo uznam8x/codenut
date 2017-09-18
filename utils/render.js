@@ -2,16 +2,13 @@ var fs = require('fs');
 var pretty = require('pretty');
 var mkdirp =  require('mkdirp');
 
-const Vue = require('vue');
+var DOMParser = require('xmldom').DOMParser;
+var XMLSerializer = require('xmldom').XMLSerializer;
+var glob = require("glob");
+
 const renderer = require('vue-server-renderer').createRenderer();
-
-Vue.component('row',{
-    template:'<div class="row"><slot></slot></div>'
-});
-Vue.component('carousel',{
-    template:'<div class="carousel"><slot></slot></div>'
-});
-
+const Vue = require('vue');
+const component = require('./component');
 var el = '';
 function parse( $el ){
     for(var key in $el ){
@@ -28,8 +25,10 @@ function parse( $el ){
     }
     return el;
 }
+
 function attributes( $attr ){
     var str = '';
+    var prefix = ' ';
     for(var key in $attr){
         str += ' '+key+'="'+$attr[key]+'"';
     }
@@ -42,7 +41,6 @@ function block( name ){
 function children( $arr ){
     var str = '';
     $arr.forEach(function(value){
-
         str += parse(value);
     });
     return str;
@@ -59,33 +57,60 @@ function clean( html ){
     return html;
 }
 
-function render( $path ) {
+function compile( $path ) {
     if( !$path ) $path = process.argv[2];
+    $path = 'app/dev/page'+$path+'/index.xml';
+    var dom = new DOMParser().parseFromString( fs.readFileSync('app/dev/config/dom.xml', 'utf-8'),'text/xml' );
+    var page = fs.readFileSync($path, 'utf-8');
+    var html = dom.documentElement;
 
-    var dom = fs.readFileSync('app/dev/config/dom.json', 'utf8');
-    var page = fs.readFileSync($path, 'utf8');
-    dom = JSON.parse( dom.replace(/\[\"@content\"\]/g, page) );
-
-    var html = '';
-
+    var el = '';
     renderer.renderToString(new Vue({
-        template: clean( parse( dom ) )
+        template: page
     }), function(err, compile)  {
         if(err) throw err;
-        html = compile.replace(/data\-server\-rendered="true"/g, 'class=""');
+        el = compile.replace(/data\-server\-rendered="true"/g, 'class=""');
     } );
 
-    html = pretty('<!doctype html>'+html)
-        .replace(/<meta[^>](.*?)>/g, '<meta $1 />')
-        .replace(/<input[^>](.*?)>/g, '<input $1 />');
+    var body = new DOMParser().parseFromString( el,'text/xml' );
+    html.appendChild(body);
 
-    var path = $path.replace(/dev/g, 'prod').replace(/json/g,'html');
+    var doc = new XMLSerializer().serializeToString(html);
+    doc = pretty('<!doctype html>'+doc);
+
+    var path = $path.replace(/dev/g, 'prod').replace(/xml/g,'html');
+
     var directory = path.split('/').slice(0,-1).join('/');
     mkdirp.sync( directory, function(err){
         if( err ) throw err;
     } );
-
-    fs.writeFileSync(path, html, 'utf8');
-    return path;
+    return fs.writeFile(path, doc, 'utf8', function(err, data){
+        if( err ){
+            return false;
+        } else {
+            return true;
+        }
+    });
 }
-exports.compile = render;
+
+
+function all(){
+    glob("app/dev/page/**/*.xml", {}, function (er, files) {
+        for(var i = 0, len = files.length; i<len; i++){
+            var path = files[i].replace('app/dev/page', '').replace('./', '').replace('/index.xml', '');
+            if( !path.length ) path = '/';
+            compile( path );
+        }
+
+    })
+}
+
+//*
+module.exports = {
+    compile:compile,
+    attributes:attributes,
+    all:all
+};
+/*/
+module.exports = all();
+//*/

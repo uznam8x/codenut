@@ -1,4 +1,5 @@
 var express = require('express');
+var minifyHTML = require('express-minify-html');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -10,8 +11,8 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 var api = require('./routes/api');
 
-
 var app = express();
+var helper = require('./utils/helper')(app);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -33,7 +34,20 @@ app.use(sassMiddleware({
     sourceMap: true
 }));
 
-//app.use(express.static(path.join(__dirname, 'public')));
+app.use(minifyHTML({
+    override:      true,
+    exception_url: false,
+    htmlMinifier: {
+        removeComments:            true,
+        collapseWhitespace:        true,
+        collapseBooleanAttributes: false,
+        removeAttributeQuotes:     false,
+        removeEmptyAttributes:     true,
+        minifyJS:                  false
+    }
+}));
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(express.static( 'app/prod' ));
 
@@ -47,6 +61,7 @@ app.use(function(req, res, next) {
     err.status = 404;
     next(err);
 });
+
 
 // error handler
 app.use(function(err, req, res, next) {

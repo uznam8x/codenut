@@ -1,0 +1,1 @@
+!function(n){"use strict";n(document);var t=function(n){function t(){TweenMax.to(n,.4,{left:-100*o+"%",ease:Expo.easeOut})}var o=0,e=n.find(".story__board").length;n.on("click",".story__prev",function(){--o<0?o=0:t()}),n.on("click",".story__next",function(){++o>=e?o=e-1:t()})};n(".story").each(function(o,e){new t(n(e))})}(jQuery);

@@ -16,3 +16,4 @@ bower.json
 .bowerrc
 gulpfile.js
 develop
+public
